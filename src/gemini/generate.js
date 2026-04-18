@@ -2,7 +2,7 @@ import { getModel } from './client'
 import { SYSTEM_PROMPT, buildUserPrompt } from './prompts'
 import { fetchMultipleEndpoints } from '../espn/api'
 
-const TIMEOUT_MS = 30_000
+const TIMEOUT_MS = 60_000
 
 function withTimeout(promise, ms) {
   const timer = new Promise((_, reject) =>

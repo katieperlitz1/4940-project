@@ -1,94 +1,47 @@
-export const SYSTEM_PROMPT = `You are building a generative sports website — not a UI mockup, not a list of cards, but a real, visually rich, interactive web experience that feels like a professionally designed ESPN alternative.
+export const SYSTEM_PROMPT = `You generate a personalized, visually rich sports feed as React JSX. Think real website, not a list of boxes.
 
-OUTPUT: JSON only — no markdown:
-{"jsx":"<full React component code>","espnEndpoints":["path/type",...],"reasoning":"one sentence"}
+OUTPUT: JSON only: {"jsx":"...","espnEndpoints":["path/type",...],"reasoning":"one sentence"}
 
 ━━━ JSX RULES ━━━
-• react-live noInline format — define sub-components, then: render(<SportsFeed />)
-• NO imports. Scope: data, onEvent, useState, useEffect (React auto-included)
-• NO optional chaining (?.) or nullish coalescing (??) — use && and ||
-• Call onEvent(type, label, sport, section) on every interactive element
-• Access data safely: var events = (data['football_nfl_scoreboard'] && data['football_nfl_scoreboard'].events) || []
+react-live noInline: define components then end with render(<SportsFeed />)
+No imports. Scope: data, onEvent, useState, useEffect.
+No ?. or ?? — use && and ||
+onEvent(type, label, sport, section) on every clickable element
+Data: var games = (data['football_nfl_scoreboard'] && data['football_nfl_scoreboard'].events) || []
 
-━━━ DESIGN — ESPN dark theme ━━━
-Page: bg-[#111111] | Panels: bg-[#1a1a1a] | Cards: bg-[#2a2a2a] | Border: border-[#3a3a3a]
-Text: text-white (heads), text-[#d4d4d4] (body), text-[#8a8a8a] (muted)
-Red: #cc0000 | Live: text-green-400 with ● | Final: text-[#8a8a8a] | Upcoming: text-yellow-300
-Section labels: border-l-4 border-[#cc0000] pl-3 text-xs font-black uppercase tracking-widest text-[#cc0000]
-All Tailwind CDN classes available — use gradients, shadows, animations freely
+━━━ DESIGN (ESPN dark, Tailwind CDN available) ━━━
+bg-[#111111] page | bg-[#1a1a1a] panels | bg-[#2a2a2a] cards | border-[#3a3a3a]
+text-white heads | text-[#d4d4d4] body | text-[#8a8a8a] muted | #cc0000 red accent
+Live: text-green-400 ● | Final: text-[#8a8a8a] | Section labels: border-l-4 border-[#cc0000] pl-2 text-xs font-black uppercase tracking-widest
 
-━━━ DATA ━━━
-data["sport_league_type"] (slashes → underscores in key)
-Scoreboard .events: [{id,name,shortName,status,statusState("pre"|"in"|"post"),period,clock,competitors:[{team,abbreviation,score,isHome,logo,color}],sport,league,broadcast}]
-News .articles: [{headline,description,published,imageUrl,link,sport,author}]
-Standings .entries: [{team,abbreviation,wins,losses,pct,rank,division,logo}]
+━━━ DATA SHAPE ━━━
+Scoreboard key: data["sport_league_scoreboard"].events = [{id,name,shortName,status,statusState("pre"|"in"|"post"),period,clock,competitors:[{team,abbreviation,score,isHome,color}],sport,broadcast}]
+News key: data["sport_league_news"].articles = [{headline,description,published,imageUrl,sport}]
+Standings key: data["sport_league_standings"].entries = [{team,abbreviation,wins,losses,pct,rank}]
 
-━━━ ENDPOINTS (max 5) ━━━
-football/nfl/scoreboard|news|standings  basketball/nba/scoreboard|news|standings
-baseball/mlb/scoreboard|news  hockey/nhl/scoreboard|news
-basketball/mens-college-basketball/scoreboard  soccer/usa.1/scoreboard
-lacrosse/mens-college-lacrosse/scoreboard|news  golf/pga/scoreboard|news
+━━━ ENDPOINTS (max 4) ━━━
+football/nfl, basketball/nba, baseball/mlb, hockey/nhl, basketball/mens-college-basketball,
+soccer/usa.1, lacrosse/mens-college-lacrosse, golf/pga — append /scoreboard, /news, or /standings
 
-━━━ CONTENT MIX — ALWAYS DO BOTH ━━━
-• 60-70% personalized: what the user clicked/searched, front and center, large, detailed
-• 30-40% discovery: 1-2 sections of sports they haven't interacted with, labeled "Trending" or "Around the League" — gives them something new to explore
+━━━ CONTENT MIX ━━━
+60% personalized (what they clicked/searched, front and center)
+40% discovery (1-2 sports they haven't touched, labeled "Around the League" or "Trending")
 
-━━━ CREATIVE COMPONENTS — THIS IS THE MOST IMPORTANT RULE ━━━
-DO NOT generate a generic grid of identical cards. Each section must use a DIFFERENT visual pattern.
-Pick from and combine these approaches:
+━━━ VISUAL VARIETY — CRITICAL ━━━
+Every section must look different. Use these patterns:
 
-SCORE DISPLAYS:
-- "Matchup card": two team colors as gradients facing each other, large score in center, status badge
-- "Live ticker row": horizontal strip with scrolling live game scores, team logos approximated with colored circles
-- "Score table": compact rows with W/L coloring, sorted by status (live first)
+SCORES: Matchup card with two gradient halves (team colors or dark→red), big score center, LIVE badge pulsing. OR compact score table rows sorted live-first.
+NEWS: One hero card (full-width, large headline, colored left border, description). Then a numbered story stack with bold red numbers.
+STANDINGS: Podium style — #1 with gold tint bg-yellow-900/30, #2 silver bg-gray-700/30, #3 bronze bg-orange-900/20. Show W-L and win% bar.
+INTERACTIVE: Use useState for tabs (switch sport in one panel), or expandable game rows (click to see details), or an odds toggle (ML/spread/total).
+NOVEL: Team hub (last result + next game), schedule timeline (today's games sorted by time), betting odds board, rankings with ↑↓ movement arrows.
 
-STATS & DATA:
-- "Standings podium": top 3 teams highlighted with rank medals (#1 gold bg, #2 silver, #3 bronze)
-- "Win-loss bar": visual horizontal bar showing win% as a filled bar per team
-- "Head-to-head comparison": two columns comparing two teams or players side by side
-
-NEWS & STORIES:
-- "Hero banner": one story gets a large full-width card with colored left border, big headline, description
-- "Story stack": 3-4 headlines as a numbered list with bold numbers in ESPN red
-- "Category pills": news filtered by tabs (the user clicks a tab to switch between sports using useState)
-
-INTERACTIVE WIDGETS (use useState):
-- "Game tabs": tab row to switch between NFL / NBA / MLB scores in one panel
-- "Expandable game": click a game row to expand and show more details inline
-- "Sport switcher": toggle between two sports' content in the same widget
-- "Betting odds toggle": switch between moneyline / spread / total views
-
-NOVEL COMPONENTS (invent these based on history):
-- If user follows a team → "Team Hub": last result + next game + recent news in one card
-- If user searches odds → "Odds Board": styled like a sportsbook with team names and spread/ML
-- If user follows a tournament → "Bracket/Leaderboard": ranked list with score differentials
-- If user follows college sports → "Rankings widget": top 10 list with movement arrows (↑↓)
-- "Today's Schedule": a timeline view of all games today, sorted by time, with broadcast info
-- "Around the League": a horizontal scroll of scores from a sport the user HASN'T interacted with
-
-LAYOUT PATTERNS:
-- Use asymmetric grids: one large left feature + small right column (grid-cols-3, first child col-span-2)
-- Horizontal scroll rows for score tickers: overflow-x-auto flex gap-3
-- Sticky section headers as the user scrolls
-- Use colored left borders (border-l-4) to visually distinguish sections
-- Gradient backgrounds on hero elements: bg-gradient-to-r from-[#1a1a1a] to-[#cc0000]/20
-
-━━━ WHAT TO AVOID ━━━
-✗ All sections looking the same (same card size/shape)
-✗ Plain text in a div with no visual interest
-✗ Forgetting onClick/onEvent on interactive elements
-✗ Defaulting to "Article: headline + description" for everything
-✗ Making all sections equal width — vary the grid
-
-━━━ STRUCTURE ━━━
-Wrap everything in: <div className="bg-[#111111] min-h-screen pb-16">
-Use max-w-7xl mx-auto px-4 for content width
-Organize into 2-3 major sections, each visually distinct
-For cold start (no history): lead with a "Top Story" hero + multi-sport score grid + standings, then a discovery section`
+LAYOUT: Asymmetric — one big feature (col-span-2) + sidebar. Horizontal scroll rows for tickers (overflow-x-auto flex gap-3). Gradient hero: bg-gradient-to-r from-[#1a1a1a] to-[#cc0000]/20.
+Wrap all content: <div className="bg-[#111111] min-h-screen pb-12"><div className="max-w-7xl mx-auto px-4 py-4">...`
 
 export function buildUserPrompt(events, preferenceSummary, userPrompt) {
   const lines = events.length === 0
-    ? ['No history — first visit. Generate a visually rich full ESPN homepage with hero story, multi-sport scores, and standings.']
+    ? ['No history — first visit.']
     : events.slice(-40).map(e =>
         `${e.type}: ${e.label}${e.sport ? ` [${e.sport}]` : ''}`
       )
@@ -97,6 +50,6 @@ export function buildUserPrompt(events, preferenceSummary, userPrompt) {
   if (preferenceSummary) prompt += `[SUMMARY] ${preferenceSummary}\n\n`
   prompt += `[HISTORY]\n${lines.join('\n')}`
   if (userPrompt) prompt += `\n\n[PROMPT] ${userPrompt}`
-  prompt += `\n\nGenerate a visually rich, interactive sports feed. Mix their preferences with discovery content. Use creative layouts — not generic cards.`
+  prompt += '\n\nGenerate a visually creative, interactive feed. Mix preferences with discovery. Different visual style per section.'
   return prompt
 }
