@@ -15,7 +15,8 @@
       "Bash(git push *)",
       "Bash(pkill -f \"vite\")",
       "Bash(pkill -f vite)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(git commit -m 'Switch to gemini-2.5-flash-preview-04-17 \\(2.0-flash deprecated for new keys\\) *)"
     ]
   }
 }
