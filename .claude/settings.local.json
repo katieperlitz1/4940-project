@@ -16,7 +16,9 @@
       "Bash(pkill -f \"vite\")",
       "Bash(pkill -f vite)",
       "Read(//tmp/**)",
-      "Bash(git commit -m 'Switch to gemini-2.5-flash-preview-04-17 \\(2.0-flash deprecated for new keys\\) *)"
+      "Bash(git commit -m 'Switch to gemini-2.5-flash-preview-04-17 \\(2.0-flash deprecated for new keys\\) *)",
+      "Bash(python3 -c \"import sys,json; models=json.load\\(sys.stdin\\).get\\('models',[]\\); [print\\(m['name']\\) for m in models if 'generateContent' in m.get\\('supportedGenerationMethods',[]\\)]\")",
+      "Bash(git commit -m 'Use gemini-2.5-flash \\(confirmed available via ListModels\\) *)"
     ]
   }
 }
