@@ -11,6 +11,24 @@ function withTimeout(promise, ms) {
   return Promise.race([promise, timer])
 }
 
+function parseResponse(raw) {
+  // Extract ENDPOINTS line
+  const endpointsMatch = raw.match(/^ENDPOINTS:\s*(.+)$/m)
+  const endpoints = endpointsMatch
+    ? endpointsMatch[1].split(',').map(s => s.trim()).filter(Boolean)
+    : []
+
+  // Extract REASONING line
+  const reasoningMatch = raw.match(/^REASONING:\s*(.+)$/m)
+  const reasoning = reasoningMatch ? reasoningMatch[1].trim() : ''
+
+  // Everything after "JSX:\n" is the component code
+  const jsxMarker = raw.indexOf('\nJSX:\n')
+  const jsx = jsxMarker !== -1 ? raw.slice(jsxMarker + 6).trim() : ''
+
+  return { endpoints, reasoning, jsx }
+}
+
 export async function generateFeed({ events, preferenceSummary = null, userPrompt = null }) {
   const model = getModel()
   const userMessage = buildUserPrompt(events, preferenceSummary, userPrompt)
@@ -26,24 +44,20 @@ export async function generateFeed({ events, preferenceSummary = null, userPromp
   console.timeEnd('gemini')
 
   const raw = result.response.text()
+  console.log('Gemini raw output length:', raw.length, 'chars')
 
-  let parsed
-  try {
-    const clean = raw.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim()
-    parsed = JSON.parse(clean)
-  } catch (e) {
-    console.error('Gemini parse failed. Raw output:', raw.slice(0, 800))
-    throw new Error('Gemini returned invalid JSON — check console')
+  const { endpoints, reasoning, jsx } = parseResponse(raw)
+
+  if (!jsx) {
+    console.error('Could not find JSX in response. Raw:', raw.slice(0, 600))
+    throw new Error('Gemini response missing JSX section')
   }
 
-  const { jsx, espnEndpoints = [], reasoning = '' } = parsed
-  if (!jsx) throw new Error('Gemini returned no JSX field')
-
-  // Cap endpoints to prevent slow fetches
-  const endpoints = espnEndpoints.slice(0, 4)
+  // Cap to 4 endpoints
+  const cappedEndpoints = endpoints.slice(0, 4)
 
   console.time('espn-fetch')
-  const data = await fetchMultipleEndpoints(endpoints)
+  const data = await fetchMultipleEndpoints(cappedEndpoints)
   console.timeEnd('espn-fetch')
 
   return { jsx, data, reasoning }

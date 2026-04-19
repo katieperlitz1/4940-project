@@ -1,6 +1,10 @@
 export const SYSTEM_PROMPT = `You generate a personalized, visually rich sports feed as React JSX. Think real website, not a list of boxes.
 
-OUTPUT: JSON only: {"jsx":"...","espnEndpoints":["path/type",...],"reasoning":"one sentence"}
+OUTPUT FORMAT — respond exactly like this, no JSON, no markdown:
+ENDPOINTS: path/type,path/type
+REASONING: one sentence
+JSX:
+[JSX code here, nothing after]
 
 ━━━ JSX RULES ━━━
 react-live noInline: define components then end with render(<SportsFeed />)
