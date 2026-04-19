@@ -7,7 +7,7 @@ export function getModel() {
     model: 'gemini-2.5-flash-lite',
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 6000,
+      maxOutputTokens: 8192,
       // Plain text — avoids JSON-escaping JSX which doubles token count
     },
   })

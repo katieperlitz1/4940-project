@@ -44,11 +44,17 @@ export default function GeneratedFeed({ jsx, data, onEvent }) {
         filename: 'SportsFeed.jsx',
       })
 
-      // Inject scope variables via Function constructor
+      // Pre-destructure data keys so Gemini can reference them as bare variables
+      // e.g. `hockey_nhl_scoreboard` works even if Gemini omits `data[...]`
+      const dataKeys = Object.keys(data)
+      const dataDestructure = dataKeys.length
+        ? `var {${dataKeys.join(',')}} = data;`
+        : ''
+
       // eslint-disable-next-line no-new-func
       const factory = new Function(
         'React', 'useState', 'useEffect', 'data', 'onEvent',
-        `${compiled}\nreturn typeof SportsFeed !== 'undefined' ? SportsFeed : null;`
+        `${dataDestructure}\n${compiled}\nreturn typeof SportsFeed !== 'undefined' ? SportsFeed : null;`
       )
 
       const Comp = factory(React, React.useState, React.useEffect, data, onEvent)
@@ -59,7 +65,7 @@ export default function GeneratedFeed({ jsx, data, onEvent }) {
       console.error('Feed compile error:', e)
       setError(e.message)
     }
-  }, [jsx])
+  }, [jsx, data])
 
   if (!jsx) return null
 
