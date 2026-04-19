@@ -21,7 +21,8 @@
       "Bash(git commit -m 'Use gemini-2.5-flash \\(confirmed available via ListModels\\) *)",
       "Bash(git commit -m 'Raise maxOutputTokens to 8192 — 2048 truncated JSX mid-string *)",
       "Bash(python3 -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\(r.get\\('candidates',[{}]\\)[0].get\\('content',{}\\).get\\('parts',[{}]\\)[0].get\\('text','ERROR:'+str\\(r\\)[:200]\\)\\)\")",
-      "Bash(git commit -m 'Switch to gemini-2.5-flash-lite — faster, confirmed available *)"
+      "Bash(git commit -m 'Switch to gemini-2.5-flash-lite — faster, confirmed available *)",
+      "Bash(git commit -m 'Auto-append render\\(\\) if Gemini omits it — fixes react-live noInline error *)"
     ]
   }
 }
