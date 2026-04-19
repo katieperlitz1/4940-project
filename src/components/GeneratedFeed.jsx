@@ -44,12 +44,13 @@ export default function GeneratedFeed({ jsx, data, onEvent }) {
         filename: 'SportsFeed.jsx',
       })
 
-      // Pre-destructure data keys so Gemini can reference them as bare variables
-      // e.g. `hockey_nhl_scoreboard` works even if Gemini omits `data[...]`
-      const dataKeys = Object.keys(data)
-      const dataDestructure = dataKeys.length
-        ? `var {${dataKeys.join(',')}} = data;`
-        : ''
+      // Pre-declare data keys as bare variables so Gemini can reference them directly.
+      // Skip keys that aren't valid JS identifiers (e.g. ESPN keys with - or .)
+      const validIdent = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+      const dataDestructure = Object.keys(data)
+        .filter(k => validIdent.test(k))
+        .map(k => `var ${k} = data['${k}'];`)
+        .join('\n')
 
       // eslint-disable-next-line no-new-func
       const factory = new Function(
