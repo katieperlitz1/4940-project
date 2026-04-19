@@ -44,6 +44,14 @@ export default function GeneratedFeed({ jsx, data, onEvent }) {
         filename: 'SportsFeed.jsx',
       })
 
+      // Add slash-keyed aliases so data['hockey/nhl/scoreboard'] also works
+      // even though our canonical keys use underscores.
+      const dataWithAliases = { ...data }
+      Object.keys(data).forEach(k => {
+        const slashKey = k.replace(/_/g, '/')
+        if (slashKey !== k) dataWithAliases[slashKey] = data[k]
+      })
+
       // Pre-declare data keys as bare variables so Gemini can reference them directly.
       // Skip keys that aren't valid JS identifiers (e.g. ESPN keys with - or .)
       const validIdent = /^[A-Za-z_$][A-Za-z0-9_$]*$/
@@ -58,7 +66,7 @@ export default function GeneratedFeed({ jsx, data, onEvent }) {
         `${dataDestructure}\n${compiled}\nreturn typeof SportsFeed !== 'undefined' ? SportsFeed : null;`
       )
 
-      const Comp = factory(React, React.useState, React.useEffect, data, onEvent)
+      const Comp = factory(React, React.useState, React.useEffect, dataWithAliases, onEvent)
       if (!Comp) throw new Error('SportsFeed not found in generated code')
 
       // Sanity check: invoke once to see if it returns a renderable element.

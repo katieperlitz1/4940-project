@@ -10,15 +10,17 @@ function SportsFeed() {
 }
 
 ━━━ HARD SYNTAX RULES — VIOLATING ANY OF THESE BREAKS THE PAGE ━━━
-1. ONE function only: \`function SportsFeed() { ... }\`. NO sub-components. NO helper arrow functions outside it.
-2. className MUST be a plain string literal. NEVER use template literals, NEVER \`bg-[\${color}]\`, NEVER any \${} inside className.
-3. For dynamic colors use inline style: \`style={{backgroundColor: team.color, color: '#fff'}}\` — NOT className.
-4. NO template literals anywhere inside JSX expressions. Use 'string ' + variable concatenation.
-5. NO optional chaining (?.) and NO nullish coalescing (??). Use && and ||.
-6. NO useState, NO useEffect, NO hooks. The feed is static once rendered (clicks log via onEvent only).
-7. Data access pattern (always): \`var games = (data['football_nfl_scoreboard'] && data['football_nfl_scoreboard'].events) || []\`
-8. Every clickable element: \`onClick={() => onEvent('CLICKED', 'human label', 'sport', 'section')}\`
-9. End with the closing brace of SportsFeed. NO render() call. NO export. NO trailing code.
+1. ONE function: \`function SportsFeed() { ... }\` with NO parameters and NO sub-components.
+2. \`data\` and \`onEvent\` are ALREADY IN SCOPE as variables. DO NOT redeclare them. DO NOT use \`arguments[0]\` or \`function SportsFeed(data, onEvent)\`. Just use them directly.
+3. Data keys use UNDERSCORES, never slashes. Endpoint \`hockey/nhl/scoreboard\` becomes key \`hockey_nhl_scoreboard\`. Endpoint \`basketball/mens-college-basketball/news\` becomes key \`basketball_mens-college-basketball_news\`. Always: \`data['<endpoint with / replaced by _>']\`.
+4. className MUST be a plain string literal. NEVER template literals, NEVER \`bg-[\${color}]\`, NEVER any \${} inside className.
+5. For dynamic colors use inline style: \`style={{backgroundColor: team.color, color: '#fff'}}\` — NOT className.
+6. NO template literals anywhere in JSX expressions. Use 'string ' + variable.
+7. NO optional chaining (?.) and NO nullish coalescing (??). Use && and ||.
+8. NO useState, NO useEffect, NO hooks. Static render only.
+9. Data access pattern: \`var games = (data['football_nfl_scoreboard'] && data['football_nfl_scoreboard'].events) || []\`
+10. Every clickable element: \`onClick={() => onEvent('CLICKED', 'human label', 'sport', 'section')}\`
+11. End with the closing brace of SportsFeed. NO render() call. NO export. NO trailing code.
 
 ━━━ SECTION COMPONENTS — pick 3 to 5, mix types, order by user preference ━━━
 
@@ -115,9 +117,18 @@ data['sport_league_scoreboard'].events = [{id, name, shortName, status, statusSt
 data['sport_league_news'].articles = [{headline, description, published, imageUrl, sport}]
 data['sport_league_standings'].entries = [{team, abbreviation, wins, losses, pct, rank}]
 
-━━━ ENDPOINTS (max 4) ━━━
-football/nfl, basketball/nba, baseball/mlb, hockey/nhl, basketball/mens-college-basketball, soccer/usa.1, lacrosse/mens-college-lacrosse, golf/pga
-Append /scoreboard, /news, or /standings. Example: lacrosse/mens-college-lacrosse/scoreboard
+━━━ EXACT ENDPOINTS (max 4 — use ONLY these strings, never abbreviate) ━━━
+football/nfl
+basketball/nba
+baseball/mlb
+hockey/nhl
+basketball/mens-college-basketball   ← NEVER use "basketball/ncaam"
+basketball/womens-college-basketball
+soccer/usa.1
+lacrosse/mens-college-lacrosse
+golf/pga
+Append exactly one of: /scoreboard, /news, /standings.
+Example: \`lacrosse/mens-college-lacrosse/scoreboard\` → key \`lacrosse_mens-college-lacrosse_scoreboard\`
 
 ━━━ PERSONALIZATION RULES ━━━
 - 60% sections about sports the user clicked/searched. 40% discovery (sports they haven't touched, label sectionTitle "AROUND THE LEAGUE" or "TRENDING").
