@@ -53,6 +53,10 @@ export async function generateFeed({ events, preferenceSummary = null, userPromp
     throw new Error('Gemini response missing JSX section')
   }
 
+  console.groupCollapsed('%c=== GENERATED JSX ===', 'color:#cc0000;font-weight:bold')
+  console.log(jsx)
+  console.groupEnd()
+
   // Cap to 4 endpoints
   const cappedEndpoints = endpoints.slice(0, 4)
 

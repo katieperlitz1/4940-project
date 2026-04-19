@@ -61,9 +61,25 @@ export default function GeneratedFeed({ jsx, data, onEvent }) {
       const Comp = factory(React, React.useState, React.useEffect, data, onEvent)
       if (!Comp) throw new Error('SportsFeed not found in generated code')
 
+      // Sanity check: invoke once to see if it returns a renderable element.
+      // Helps catch silent failures where the component renders nothing.
+      try {
+        const probe = Comp()
+        if (probe == null || probe === false) {
+          console.warn('SportsFeed() returned nothing renderable. Data keys:', Object.keys(data))
+          console.warn('Compiled code:', compiled)
+          throw new Error('SportsFeed returned empty content — data may be missing or sections all conditionally rendered nothing')
+        }
+      } catch (probeErr) {
+        if (probeErr.message.startsWith('SportsFeed returned empty')) throw probeErr
+        // Other probe errors (e.g. accessing undefined) — let React handle on real render
+        console.warn('Probe render warning:', probeErr.message)
+      }
+
       setFeedComponent(() => Comp)
     } catch (e) {
       console.error('Feed compile error:', e)
+      console.error('Raw JSX that failed:\n', jsx)
       setError(e.message)
     }
   }, [jsx, data])
