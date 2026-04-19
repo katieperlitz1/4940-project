@@ -53,9 +53,6 @@ export async function generateFeed({ events, preferenceSummary = null, userPromp
     throw new Error('Gemini response missing JSX section')
   }
 
-  // react-live noInline mode requires a render() call — append if missing
-  const finalJsx = jsx.includes('render(') ? jsx : jsx + '\nrender(<SportsFeed />)'
-
   // Cap to 4 endpoints
   const cappedEndpoints = endpoints.slice(0, 4)
 
@@ -63,5 +60,5 @@ export async function generateFeed({ events, preferenceSummary = null, userPromp
   const data = await fetchMultipleEndpoints(cappedEndpoints)
   console.timeEnd('espn-fetch')
 
-  return { jsx: finalJsx, data, reasoning }
+  return { jsx, data, reasoning }
 }

@@ -1,51 +1,141 @@
-export const SYSTEM_PROMPT = `You generate a personalized, visually rich sports feed as React JSX. Think real website, not a list of boxes.
+export const SYSTEM_PROMPT = `You generate a personalized ESPN sports feed as ONE React function. Personalization = which sections appear, ordering, and content — NOT visual style chaos.
 
-OUTPUT FORMAT — respond exactly like this, no JSON, no markdown:
+━━━ OUTPUT FORMAT (no markdown, no JSON, exactly this) ━━━
 ENDPOINTS: path/type,path/type
-REASONING: one sentence
+REASONING: one sentence on why you chose this layout for this user
 JSX:
-[JSX code here, nothing after]
+function SportsFeed() {
+  // your code
+  return (...);
+}
 
-━━━ JSX RULES ━━━
-react-live noInline: define components then end with render(<SportsFeed />)
-No imports. Scope: data, onEvent, useState, useEffect.
-No ?. or ?? — use && and ||
-onEvent(type, label, sport, section) on every clickable element
-Data: var games = (data['football_nfl_scoreboard'] && data['football_nfl_scoreboard'].events) || []
+━━━ HARD SYNTAX RULES — VIOLATING ANY OF THESE BREAKS THE PAGE ━━━
+1. ONE function only: \`function SportsFeed() { ... }\`. NO sub-components. NO helper arrow functions outside it.
+2. className MUST be a plain string literal. NEVER use template literals, NEVER \`bg-[\${color}]\`, NEVER any \${} inside className.
+3. For dynamic colors use inline style: \`style={{backgroundColor: team.color, color: '#fff'}}\` — NOT className.
+4. NO template literals anywhere inside JSX expressions. Use 'string ' + variable concatenation.
+5. NO optional chaining (?.) and NO nullish coalescing (??). Use && and ||.
+6. NO useState, NO useEffect, NO hooks. The feed is static once rendered (clicks log via onEvent only).
+7. Data access pattern (always): \`var games = (data['football_nfl_scoreboard'] && data['football_nfl_scoreboard'].events) || []\`
+8. Every clickable element: \`onClick={() => onEvent('CLICKED', 'human label', 'sport', 'section')}\`
+9. End with the closing brace of SportsFeed. NO render() call. NO export. NO trailing code.
 
-━━━ DESIGN (ESPN dark, Tailwind CDN available) ━━━
-bg-[#111111] page | bg-[#1a1a1a] panels | bg-[#2a2a2a] cards | border-[#3a3a3a]
-text-white heads | text-[#d4d4d4] body | text-[#8a8a8a] muted | #cc0000 red accent
-Live: text-green-400 ● | Final: text-[#8a8a8a] | Section labels: border-l-4 border-[#cc0000] pl-2 text-xs font-black uppercase tracking-widest
+━━━ SECTION COMPONENTS — pick 3 to 5, mix types, order by user preference ━━━
 
-━━━ DATA SHAPE ━━━
-Scoreboard key: data["sport_league_scoreboard"].events = [{id,name,shortName,status,statusState("pre"|"in"|"post"),period,clock,competitors:[{team,abbreviation,score,isHome,color}],sport,broadcast}]
-News key: data["sport_league_news"].articles = [{headline,description,published,imageUrl,sport}]
-Standings key: data["sport_league_standings"].entries = [{team,abbreviation,wins,losses,pct,rank}]
+[HERO] — Featured story/matchup, full width, big text. Use ONCE at top.
+<div className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-6 mb-4 cursor-pointer" onClick={...}>
+  <div className="text-[#cc0000] text-xs font-black uppercase tracking-widest mb-2">FEATURED</div>
+  <div className="text-white text-3xl font-bold mb-2">{headline}</div>
+  <div className="text-[#d4d4d4] text-sm">{description}</div>
+</div>
+
+[SCORES] — Game list. Each row clickable. Use team color via inline style.
+<div className="mb-6">
+  <div className="text-white text-xs font-black uppercase tracking-widest mb-3 border-l-4 border-[#cc0000] pl-2">{sectionTitle}</div>
+  <div className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg overflow-hidden">
+    {games.map((g, i) => {
+      var home = (g.competitors && g.competitors[0]) || {};
+      var away = (g.competitors && g.competitors[1]) || {};
+      return (
+        <div key={i} className="flex items-center justify-between p-3 border-b border-[#3a3a3a] cursor-pointer hover:bg-[#2a2a2a]" onClick={() => onEvent('CLICKED', g.shortName || g.name, g.sport, 'scores')}>
+          <div className="flex items-center gap-3">
+            <span className="text-white font-bold w-12" style={{color: away.color || '#fff'}}>{away.abbreviation}</span>
+            <span className="text-white text-lg font-bold">{away.score || '0'}</span>
+            <span className="text-[#8a8a8a] text-xs">@</span>
+            <span className="text-white font-bold w-12" style={{color: home.color || '#fff'}}>{home.abbreviation}</span>
+            <span className="text-white text-lg font-bold">{home.score || '0'}</span>
+          </div>
+          <div className="text-[#8a8a8a] text-xs">{g.status || ''}</div>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+[NEWS] — One large card + numbered story stack.
+<div className="mb-6">
+  <div className="text-white text-xs font-black uppercase tracking-widest mb-3 border-l-4 border-[#cc0000] pl-2">{sectionTitle}</div>
+  <div className="grid grid-cols-3 gap-4">
+    <div className="col-span-2 bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-5 cursor-pointer hover:bg-[#2a2a2a]" onClick={...}>
+      <div className="text-white text-xl font-bold mb-2">{articles[0].headline}</div>
+      <div className="text-[#d4d4d4] text-sm">{articles[0].description}</div>
+    </div>
+    <div className="space-y-2">
+      {articles.slice(1, 4).map((a, i) => (
+        <div key={i} className="bg-[#1a1a1a] border border-[#3a3a3a] rounded p-3 flex gap-3 cursor-pointer hover:bg-[#2a2a2a]" onClick={...}>
+          <span className="text-[#cc0000] text-2xl font-black">{i + 2}</span>
+          <span className="text-white text-sm font-bold">{a.headline}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+[STANDINGS] — Podium top 3 + table.
+<div className="mb-6">
+  <div className="text-white text-xs font-black uppercase tracking-widest mb-3 border-l-4 border-[#cc0000] pl-2">{sectionTitle}</div>
+  <div className="grid grid-cols-3 gap-3 mb-3">
+    {entries.slice(0, 3).map((e, i) => {
+      var bg = i === 0 ? 'bg-yellow-900/30' : i === 1 ? 'bg-gray-700/30' : 'bg-orange-900/20';
+      return (
+        <div key={i} className={'border border-[#3a3a3a] rounded-lg p-4 text-center cursor-pointer ' + bg} onClick={...}>
+          <div className="text-[#8a8a8a] text-xs">#{i + 1}</div>
+          <div className="text-white text-lg font-bold">{e.abbreviation}</div>
+          <div className="text-[#d4d4d4] text-sm">{e.wins}-{e.losses}</div>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+[TICKER] — Horizontal scrolling row of mini score cards.
+<div className="mb-6 overflow-x-auto">
+  <div className="flex gap-3">
+    {games.map((g, i) => (
+      <div key={i} className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-3 min-w-[180px] cursor-pointer hover:bg-[#2a2a2a]" onClick={...}>
+        <div className="text-[#8a8a8a] text-xs">{g.status}</div>
+        <div className="text-white text-sm font-bold">{(g.competitors && g.competitors[0] && g.competitors[0].abbreviation) || ''} {(g.competitors && g.competitors[0] && g.competitors[0].score) || ''}</div>
+        <div className="text-white text-sm font-bold">{(g.competitors && g.competitors[1] && g.competitors[1].abbreviation) || ''} {(g.competitors && g.competitors[1] && g.competitors[1].score) || ''}</div>
+      </div>
+    ))}
+  </div>
+</div>
+
+━━━ PAGE WRAPPER (always) ━━━
+return (
+  <div className="bg-[#111111] min-h-screen pb-12">
+    <div className="max-w-7xl mx-auto px-4 py-4">
+      {/* sections here */}
+    </div>
+  </div>
+);
+
+━━━ DATA SHAPES ━━━
+data['sport_league_scoreboard'].events = [{id, name, shortName, status, statusState ('pre'|'in'|'post'), period, clock, competitors:[{team, abbreviation, score, isHome, color}], sport, broadcast}]
+data['sport_league_news'].articles = [{headline, description, published, imageUrl, sport}]
+data['sport_league_standings'].entries = [{team, abbreviation, wins, losses, pct, rank}]
 
 ━━━ ENDPOINTS (max 4) ━━━
-football/nfl, basketball/nba, baseball/mlb, hockey/nhl, basketball/mens-college-basketball,
-soccer/usa.1, lacrosse/mens-college-lacrosse, golf/pga — append /scoreboard, /news, or /standings
+football/nfl, basketball/nba, baseball/mlb, hockey/nhl, basketball/mens-college-basketball, soccer/usa.1, lacrosse/mens-college-lacrosse, golf/pga
+Append /scoreboard, /news, or /standings. Example: lacrosse/mens-college-lacrosse/scoreboard
 
-━━━ CONTENT MIX ━━━
-60% personalized (what they clicked/searched, front and center)
-40% discovery (1-2 sports they haven't touched, labeled "Around the League" or "Trending")
+━━━ PERSONALIZATION RULES ━━━
+- 60% sections about sports the user clicked/searched. 40% discovery (sports they haven't touched, label sectionTitle "AROUND THE LEAGUE" or "TRENDING").
+- Order: user's top sport(s) FIRST.
+- Cold start (no history): show variety across NFL, NBA, MLB, NHL.
+- Skip a section if its endpoint data is empty.
+- Pick 3-5 sections total. Vary the section types — don't pick 3 SCORES in a row.
 
-━━━ VISUAL VARIETY — CRITICAL ━━━
-Every section must look different. Use these patterns:
-
-SCORES: Matchup card with two gradient halves (team colors or dark→red), big score center, LIVE badge pulsing. OR compact score table rows sorted live-first.
-NEWS: One hero card (full-width, large headline, colored left border, description). Then a numbered story stack with bold red numbers.
-STANDINGS: Podium style — #1 with gold tint bg-yellow-900/30, #2 silver bg-gray-700/30, #3 bronze bg-orange-900/20. Show W-L and win% bar.
-INTERACTIVE: Use useState for tabs (switch sport in one panel), or expandable game rows (click to see details), or an odds toggle (ML/spread/total).
-NOVEL: Team hub (last result + next game), schedule timeline (today's games sorted by time), betting odds board, rankings with ↑↓ movement arrows.
-
-LAYOUT: Asymmetric — one big feature (col-span-2) + sidebar. Horizontal scroll rows for tickers (overflow-x-auto flex gap-3). Gradient hero: bg-gradient-to-r from-[#1a1a1a] to-[#cc0000]/20.
-Wrap all content: <div className="bg-[#111111] min-h-screen pb-12"><div className="max-w-7xl mx-auto px-4 py-4">...`
+CHECKLIST BEFORE FINISHING:
+✓ One function named SportsFeed
+✓ No template literals in className
+✓ All dynamic colors via style={{}}
+✓ No hooks, no optional chaining
+✓ Closing brace at end, no render() call`
 
 export function buildUserPrompt(events, preferenceSummary, userPrompt) {
   const lines = events.length === 0
-    ? ['No history — first visit.']
+    ? ['No history — first visit, show full ESPN default with variety across major sports.']
     : events.slice(-40).map(e =>
         `${e.type}: ${e.label}${e.sport ? ` [${e.sport}]` : ''}`
       )
@@ -54,6 +144,6 @@ export function buildUserPrompt(events, preferenceSummary, userPrompt) {
   if (preferenceSummary) prompt += `[SUMMARY] ${preferenceSummary}\n\n`
   prompt += `[HISTORY]\n${lines.join('\n')}`
   if (userPrompt) prompt += `\n\n[PROMPT] ${userPrompt}`
-  prompt += '\n\nGenerate a visually creative, interactive feed. Mix preferences with discovery. Different visual style per section.'
+  prompt += '\n\nGenerate the SportsFeed function. Pick 3-5 sections. Mix types. Lead with this user\'s top sport.'
   return prompt
 }
