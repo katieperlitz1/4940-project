@@ -4,20 +4,41 @@ export function endpointToKey(endpoint) {
   return endpoint.replace(/\//g, '_')
 }
 
+// Reverse common mistake: Gemini sometimes returns underscored keys instead of slash paths.
+// We can't blindly replace _ → / because league slugs like "mens-college-basketball" stay,
+// and "soccer/usa.1" stays. Use the known sport prefixes to recover the slash form.
+const SPORT_PREFIXES = [
+  'football_nfl', 'basketball_nba', 'baseball_mlb', 'hockey_nhl',
+  'basketball_mens-college-basketball', 'basketball_womens-college-basketball',
+  'soccer_usa.1', 'lacrosse_mens-college-lacrosse', 'golf_pga',
+]
+function normalizeEndpointPath(ep) {
+  // Already slashed → use as-is
+  if (ep.includes('/')) return ep
+  for (const prefix of SPORT_PREFIXES) {
+    if (ep.startsWith(prefix + '_')) {
+      const rest = ep.slice(prefix.length + 1)
+      return prefix.replace('_', '/') + '/' + rest
+    }
+  }
+  return ep
+}
+
 export async function fetchESPNEndpoint(endpoint) {
+  const path = normalizeEndpointPath(endpoint)
   try {
-    const res = await fetch(`${BASE}/${endpoint}`)
+    const res = await fetch(`${BASE}/${path}`)
     if (!res.ok) return null
     const json = await res.json()
-    return normalizeResponse(endpoint, json)
+    return normalizeResponse(path, json)
   } catch (e) {
-    console.warn(`ESPN fetch failed [${endpoint}]:`, e.message)
+    console.warn(`ESPN fetch failed [${path}]:`, e.message)
     return null
   }
 }
 
 export async function fetchMultipleEndpoints(endpoints) {
-  const unique = [...new Set(endpoints)]
+  const unique = [...new Set(endpoints.map(normalizeEndpointPath))]
   const results = await Promise.all(unique.map(fetchESPNEndpoint))
   const data = {}
   unique.forEach((ep, i) => {

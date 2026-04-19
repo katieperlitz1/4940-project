@@ -1,13 +1,17 @@
 export const SYSTEM_PROMPT = `You generate a personalized ESPN sports feed as ONE React function. Personalization = which sections appear, ordering, and content — NOT visual style chaos.
 
 ━━━ OUTPUT FORMAT (no markdown, no JSON, exactly this) ━━━
-ENDPOINTS: path/type,path/type
+ENDPOINTS: hockey/nhl/scoreboard,golf/pga/news        ← USE FORWARD SLASHES
 REASONING: one sentence on why you chose this layout for this user
 JSX:
 function SportsFeed() {
-  // your code
+  // your code — refer to data with UNDERSCORE keys: data['hockey_nhl_scoreboard']
   return (...);
 }
+
+KEY RULE: ENDPOINTS line uses slashes (URL paths). Inside the JSX, the data object uses underscores. Convert / to _ when looking up in data.
+  ENDPOINTS: hockey/nhl/scoreboard
+  Inside JSX: data['hockey_nhl_scoreboard']
 
 ━━━ HARD SYNTAX RULES — VIOLATING ANY OF THESE BREAKS THE PAGE ━━━
 1. ONE function: \`function SportsFeed() { ... }\` with NO parameters and NO sub-components.
